@@ -28,6 +28,36 @@ const LabInterface = () => {
   const [activePage, setActivePage] = useState('home');
   const [searchQuery, setSearchQuery] = useState('');
   const [protocolRequest, setProtocolRequest] = useState('');
+  const [generatedProtocol, setGeneratedProtocol] = useState(null);
+  const [showChecklist, setShowChecklist] = useState(false);
+  const [checkedSteps, setCheckedSteps] = useState({});
+  
+  const handleGenerateProtocol = () => {
+    setCheckedSteps({});
+    // Simulating protocol generation
+    if (protocolRequest.toLowerCase().includes('plasmid transformation') || 
+        protocolRequest.toLowerCase().includes('electroporation')) {
+      setGeneratedProtocol({
+        title: "Plasmid Transformation Protocol using Electroporation",
+        steps: [
+          "Prepare 17 mm x 100 mm round-bottom culture tubes at room temperature",
+          "Place SOC recovery medium in a 37°C water bath",
+          "Pre-warm selective plates at 37°C for 1 hour",
+          "Place electroporation cuvettes (1 mm) and microcentrifuge tubes on ice",
+          "Heat-denatured ligation reactions can be used for electroporation directly; however, column purification is recommended",
+          "Thaw Electrocompetent cells on ice (about 10 minutes) and mix the cells by flicking gently",
+          "Transfer 25 μl of the cells to a chilled microcentrifuge tube",
+          "Add 1 μl of the DNA solution to the microcentrifuge tube",
+          "Carefully transfer the cell/DNA mix into a chilled cuvette without introducing bubbles",
+          "Electroporate using: 2.1 kV, 100 Ω, and 25 μF",
+          "Immediately add 975 µl of 37°C SOC to the cuvette, mix and transfer to culture tube",
+          "Shake vigorously (250 rpm) or rotate at 37°C for 1 hour",
+          "Dilute the cells as appropriate, then spread 100-200 μl onto selective plate",
+          "Incubate plates at 37°C for 8 hours to overnight"
+        ]
+      });
+    }
+  };
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-gray-50 to-white">
@@ -144,7 +174,7 @@ const LabInterface = () => {
         </div>
 
         <div className="p-6">
-                      {/* Hero Section */}
+          {/* Hero Section */}
           <div className="mb-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-8 text-white">
             <h1 className="text-3xl font-bold mb-2">Welcome to LabFlow</h1>
             <p className="text-blue-100 max-w-2xl mb-6">
@@ -221,12 +251,80 @@ const LabInterface = () => {
                       onChange={(e) => setProtocolRequest(e.target.value)}
                       className="min-h-[150px]"
                     />
-                    <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                    <Button 
+                      className="w-full bg-blue-600 hover:bg-blue-700"
+                      onClick={handleGenerateProtocol}
+                    >
                       Generate Protocol
                     </Button>
                   </div>
                 </CardContent>
               </Card>
+
+              {generatedProtocol && (
+                <Card className="mt-6">
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <span>{generatedProtocol.title}</span>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setShowChecklist(!showChecklist)}
+                        className="gap-2"
+                      >
+                        <CheckCircle2 className="h-4 w-4" />
+                        {showChecklist ? 'View Steps' : 'Convert to Checklist'}
+                      </Button>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {showChecklist && (
+                      <div className="mb-6">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm text-gray-600">Progress</span>
+                          <span className="text-sm font-medium text-gray-900">
+                            {Math.round((Object.values(checkedSteps).filter(Boolean).length / generatedProtocol.steps.length) * 100)}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                          <div 
+                            className="bg-blue-600 h-2.5 rounded-full transition-all duration-300 ease-in-out"
+                            style={{ 
+                              width: `${(Object.values(checkedSteps).filter(Boolean).length / generatedProtocol.steps.length) * 100}%`
+                            }}
+                          ></div>
+                        </div>
+                      </div>
+                    )}
+                    <div className="space-y-4">
+                      {generatedProtocol.steps.map((step, index) => (
+                        <div key={index} className="flex gap-4 items-start">
+                          {showChecklist ? (
+                            <input 
+                              type="checkbox" 
+                              checked={checkedSteps[index] || false}
+                              onChange={(e) => {
+                                setCheckedSteps(prev => ({
+                                  ...prev,
+                                  [index]: e.target.checked
+                                }));
+                              }}
+                              className="mt-1.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            />
+                          ) : (
+                            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                              <span className="text-blue-600 font-medium">{index + 1}</span>
+                            </div>
+                          )}
+                          <div className="flex-1">
+                            <p className="text-gray-700">{step}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Popular Protocols */}
               <Card>
